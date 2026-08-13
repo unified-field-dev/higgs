@@ -330,7 +330,7 @@ dependencies = [
  "boson-core",
  "serde",
  "serde_json",
- "uf-valence 0.1.4",
+ "uf-valence",
 ]
 
 [[package]]
@@ -424,25 +424,25 @@ dependencies = [
 [[package]]
 name = "chronon-coordinator"
 version = "0.1.0"
-source = "git+https://github.com/unified-field-dev/chronon-coordinator?branch=main#893838337167e8a3d06f2a6e4e78dc62bbe86512"
+source = "git+https://github.com/unified-field-dev/chronon-coordinator?branch=main#166a517d7eb5a3929f4aef88f31c5f409bdca2f2"
 dependencies = [
  "anyhow",
  "async-trait",
  "chrono",
- "chronon-core 0.1.2",
- "chronon-executor 0.1.2",
+ "chronon-core",
+ "chronon-executor",
  "chronon-scheduler",
  "log",
  "serde",
  "serde_json",
  "uf-quark",
- "uf-valence 0.1.2",
+ "uf-valence",
 ]
 
 [[package]]
 name = "chronon-coordinator-macros"
 version = "0.1.0"
-source = "git+https://github.com/unified-field-dev/chronon-coordinator-macros?branch=main#b78eceb62d909dc886a7dace6b342f983ae55e0d"
+source = "git+https://github.com/unified-field-dev/chronon-coordinator-macros?branch=main#214272889c01d0737a99496e30fb5d11c54e6511"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -452,20 +452,6 @@ dependencies = [
 
 [[package]]
 name = "chronon-core"
-version = "0.1.2"
-source = "git+https://github.com/unified-field-dev/chronon?rev=6c9ec6dfe7e4343269cfb336ae9773e7e180cddb#6c9ec6dfe7e4343269cfb336ae9773e7e180cddb"
-dependencies = [
- "async-trait",
- "chrono",
- "parking_lot",
- "serde",
- "serde_json",
- "thiserror 2.0.20",
- "uuid",
-]
-
-[[package]]
-name = "chronon-core"
 version = "0.1.3"
 source = "git+https://github.com/unified-field-dev/chronon?tag=v0.1.3#c43e16dbec81d3cab4bd77be2a2fc056cbaa220d"
 dependencies = [
@@ -480,27 +466,12 @@ dependencies = [
 
 [[package]]
 name = "chronon-executor"
-version = "0.1.2"
-source = "git+https://github.com/unified-field-dev/chronon?rev=6c9ec6dfe7e4343269cfb336ae9773e7e180cddb#6c9ec6dfe7e4343269cfb336ae9773e7e180cddb"
-dependencies = [
- "chrono",
- "chronon-core 0.1.2",
- "chronon-telemetry 0.1.2",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "uf-quark",
-]
-
-[[package]]
-name = "chronon-executor"
 version = "0.1.3"
 source = "git+https://github.com/unified-field-dev/chronon?tag=v0.1.3#c43e16dbec81d3cab4bd77be2a2fc056cbaa220d"
 dependencies = [
  "chrono",
- "chronon-core 0.1.3",
- "chronon-telemetry 0.1.3",
+ "chronon-core",
+ "chronon-telemetry",
  "serde_json",
  "tokio",
  "tracing",
@@ -510,13 +481,13 @@ dependencies = [
 
 [[package]]
 name = "chronon-scheduler"
-version = "0.1.2"
-source = "git+https://github.com/unified-field-dev/chronon?rev=6c9ec6dfe7e4343269cfb336ae9773e7e180cddb#6c9ec6dfe7e4343269cfb336ae9773e7e180cddb"
+version = "0.1.3"
+source = "git+https://github.com/unified-field-dev/chronon?tag=v0.1.3#c43e16dbec81d3cab4bd77be2a2fc056cbaa220d"
 dependencies = [
  "chrono",
  "chrono-tz",
- "chronon-core 0.1.2",
- "chronon-telemetry 0.1.2",
+ "chronon-core",
+ "chronon-telemetry",
  "croner",
  "serde",
  "serde_json",
@@ -524,16 +495,6 @@ dependencies = [
  "tracing",
  "uuid",
  "xxhash-rust",
-]
-
-[[package]]
-name = "chronon-telemetry"
-version = "0.1.2"
-source = "git+https://github.com/unified-field-dev/chronon?rev=6c9ec6dfe7e4343269cfb336ae9773e7e180cddb#6c9ec6dfe7e4343269cfb336ae9773e7e180cddb"
-dependencies = [
- "parking_lot",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]
@@ -551,9 +512,9 @@ name = "chronon-valence-identity"
 version = "0.1.0"
 source = "git+https://github.com/unified-field-dev/chronon-valence-identity?branch=main#25304810ef6fd8852e44f779b877427f73680936"
 dependencies = [
- "chronon-core 0.1.3",
+ "chronon-core",
  "serde_json",
- "uf-valence 0.1.4",
+ "uf-valence",
 ]
 
 [[package]]
@@ -1150,8 +1111,8 @@ dependencies = [
  "boson-valence-identity",
  "chronon-coordinator",
  "chronon-coordinator-macros",
- "chronon-core 0.1.3",
- "chronon-executor 0.1.3",
+ "chronon-core",
+ "chronon-executor",
  "chronon-valence-identity",
  "futures",
  "higgs-core",
@@ -1170,7 +1131,7 @@ dependencies = [
  "uf-photon",
  "uf-photon-core",
  "uf-quark",
- "uf-valence 0.1.4",
+ "uf-valence",
 ]
 
 [[package]]
@@ -1187,7 +1148,7 @@ dependencies = [
  "thiserror 2.0.20",
  "tokio",
  "tracing",
- "uf-valence 0.1.4",
+ "uf-valence",
 ]
 
 [[package]]
@@ -1202,7 +1163,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
- "uf-valence 0.1.4",
+ "uf-valence",
 ]
 
 [[package]]
@@ -2167,7 +2128,7 @@ dependencies = [
  "uf-photon-core",
  "uf-quark",
  "uf-spectra-core",
- "uf-valence 0.1.4",
+ "uf-valence",
 ]
 
 [[package]]
@@ -3572,34 +3533,13 @@ dependencies = [
 
 [[package]]
 name = "uf-valence"
-version = "0.1.2"
-source = "git+https://github.com/unified-field-dev/valence?tag=v0.1.2#c393b0e52178c0d586f2b337cb5437353799e580"
-dependencies = [
- "uf-valence-backend-mem 0.1.2",
- "uf-valence-core 0.1.2",
- "uf-valence-macros 0.1.2",
-]
-
-[[package]]
-name = "uf-valence"
 version = "0.1.4"
 source = "git+https://github.com/unified-field-dev/valence?tag=v0.1.4#a671abf3029ad945d7755d26c2578a2a8195c96b"
 dependencies = [
- "uf-valence-backend-mem 0.1.4",
+ "uf-valence-backend-mem",
  "uf-valence-backend-sqlite",
- "uf-valence-core 0.1.4",
- "uf-valence-macros 0.1.4",
-]
-
-[[package]]
-name = "uf-valence-backend-mem"
-version = "0.1.2"
-source = "git+https://github.com/unified-field-dev/valence?tag=v0.1.2#c393b0e52178c0d586f2b337cb5437353799e580"
-dependencies = [
- "async-trait",
- "serde_json",
- "tokio",
- "uf-valence-core 0.1.2",
+ "uf-valence-core",
+ "uf-valence-macros",
 ]
 
 [[package]]
@@ -3610,7 +3550,7 @@ dependencies = [
  "async-trait",
  "serde_json",
  "tokio",
- "uf-valence-core 0.1.4",
+ "uf-valence-core",
 ]
 
 [[package]]
@@ -3624,7 +3564,7 @@ dependencies = [
  "thiserror 2.0.20",
  "tokio",
  "tracing",
- "uf-valence-core 0.1.4",
+ "uf-valence-core",
  "uuid",
 ]
 
@@ -3638,26 +3578,7 @@ dependencies = [
  "sqlx",
  "tokio",
  "uf-valence-backend-sql",
- "uf-valence-core 0.1.4",
-]
-
-[[package]]
-name = "uf-valence-core"
-version = "0.1.2"
-source = "git+https://github.com/unified-field-dev/valence?tag=v0.1.2#c393b0e52178c0d586f2b337cb5437353799e580"
-dependencies = [
- "async-trait",
- "chrono",
- "inventory",
- "quick_cache",
- "regex",
- "serde",
- "serde_json",
- "thiserror 2.0.20",
- "tokio",
- "tracing",
- "uf-valence-telemetry 0.1.2",
- "uuid",
+ "uf-valence-core",
 ]
 
 [[package]]
@@ -3675,40 +3596,19 @@ dependencies = [
  "thiserror 2.0.20",
  "tokio",
  "tracing",
- "uf-valence-telemetry 0.1.4",
+ "uf-valence-telemetry",
  "uuid",
 ]
 
 [[package]]
 name = "uf-valence-macros"
-version = "0.1.2"
-source = "git+https://github.com/unified-field-dev/valence?tag=v0.1.2#c393b0e52178c0d586f2b337cb5437353799e580"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.119",
- "uf-valence-schema-dsl 0.1.2",
-]
-
-[[package]]
-name = "uf-valence-macros"
 version = "0.1.4"
 source = "git+https://github.com/unified-field-dev/valence?tag=v0.1.4#a671abf3029ad945d7755d26c2578a2a8195c96b"
 dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.119",
- "uf-valence-schema-dsl 0.1.4",
-]
-
-[[package]]
-name = "uf-valence-schema-dsl"
-version = "0.1.2"
-source = "git+https://github.com/unified-field-dev/valence?tag=v0.1.2#c393b0e52178c0d586f2b337cb5437353799e580"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.119",
+ "uf-valence-schema-dsl",
 ]
 
 [[package]]
@@ -3719,14 +3619,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.119",
-]
-
-[[package]]
-name = "uf-valence-telemetry"
-version = "0.1.2"
-source = "git+https://github.com/unified-field-dev/valence?tag=v0.1.2#c393b0e52178c0d586f2b337cb5437353799e580"
-dependencies = [
- "serde_json",
 ]
 
 [[package]]
