@@ -8,31 +8,29 @@ use valence::Valence;
 /// Prefer also implementing `valence::ValenceFactory` on the same type (or wrapping the
 /// same `Arc`) so Chronon / Boson / Photon identity adapters share the factory with SSR.
 ///
-/// SSR recovers Valence via `Higgs::valence` / `Higgs::from_request` (platform `higgs`,
+/// SSR recovers Valence via `Higgs::valence` / `Higgs::from_request` (package `higgs`,
 /// feature `ssr`). Workers recover Valence from family helpers
 /// (`chronon_valence_identity::valence_from_context`,
 /// `boson_valence_identity::valence_from_context`, Photon `Valence` handler params) — not
 /// from `Higgs::from_request`.
 ///
 /// See the [crate-root example](crate#quick-example) for builder wiring in this crate;
-/// platform `higgs` documents the full SSR + worker paths.
+/// package `higgs` documents the full SSR + worker paths.
 ///
 /// Runnable: `cargo run -p higgs --example shared_factory --features ssr`
 ///
 /// # Examples
 ///
-/// ```rust,ignore
+/// ```rust,no_run
+/// # #[cfg(feature = "test-utils")]
+/// # {
 /// use higgs_core::HiggsValenceFactory;
-/// use valence::Valence;
+/// use higgs_core::test_support::UnreachableValenceFactory;
 ///
-/// struct MyFactory;
-///
-/// impl HiggsValenceFactory for MyFactory {
-///     fn build(&self, actor_json: &serde_json::Value) -> anyhow::Result<Valence> {
-///         // Delegate to RouterValenceFactory / host ValenceFactory …
-///         todo!()
-///     }
-/// }
+/// // Host adapters usually delegate to RouterValenceFactory or a shared Arc<dyn ValenceFactory>.
+/// let factory: &dyn HiggsValenceFactory = &UnreachableValenceFactory;
+/// # let _ = factory;
+/// # }
 /// ```
 pub trait HiggsValenceFactory: Send + Sync + 'static {
     /// Build a [`Valence`] scoped to the actor described by `actor_json`.

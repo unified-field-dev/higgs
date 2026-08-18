@@ -35,8 +35,9 @@
 //!   [`Higgs::photon`] when the host registered backends on the builder
 //! - **Startup preflight** — [`preflight`] (with `ssr` / `preflight`) after the
 //!   database router is installed
-//! - **Permission helpers** — [`server_runtime`] for encode/decode used by
-//!   `higgs-macros`-generated server functions
+//! - **Permission helpers** — [`server_runtime`] encode/decode for permission-denied payloads
+//!   (manual checks and future macro wiring). `#[higgs_macros::server(permission = "...")]`
+//!   is **not shipped** in this release — see `higgs-macros` docs.
 //!
 //! # Organized by task
 //!

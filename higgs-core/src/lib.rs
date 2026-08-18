@@ -6,8 +6,8 @@
 //! [`server_runtime`], and per-request [`Higgs::from_request`] via `higgs-host` +
 //! `higgs-identity`.
 //!
-//! Provides Valence factory + session-scoped request context. Use the platform `higgs`
-//! crate for `ctx.chronon()` / `boson()` / `photon()` accessors.
+//! Provides Valence factory + session-scoped request context. For Chronon / Boson / Photon
+//! accessors on the same request, depend on package `higgs` (this repository's `higgs` crate).
 //!
 //! ## Capabilities
 //!
@@ -34,7 +34,7 @@
 //! | Server-function encode/decode helpers | [`server_runtime`] |
 //! | Startup validation / seeding | [`preflight`] (feature `preflight`) |
 //! | External actor JSON policy | [`actor_policy`] |
-//! | Chronon / Boson / Photon accessors | not here — depend on platform crate `higgs` instead |
+//! | Chronon / Boson / Photon accessors | not here — depend on package `higgs` instead |
 //!
 //! # Typical host flow
 //!
@@ -50,8 +50,8 @@
 //! `cargo run -p higgs --example preflight_boot --features preflight`.
 //! See `higgs/examples/README.md`.
 //!
-//! For Chronon / Boson / Photon accessors on the same request public crate, depend on
-//! platform crate `higgs` instead of this thin hub.
+//! For Chronon / Boson / Photon accessors on the same request, depend on package `higgs`
+//! instead of `higgs-core` alone.
 //!
 //! # Feature flags
 //!

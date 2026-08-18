@@ -1,7 +1,7 @@
 //! # higgs-macros — server-function wiring
 //!
 //! Proc macros that standardize operation context for Leptos server functions used
-//! with platform crate `higgs`.
+//! with package `higgs`.
 //!
 //! ## Capabilities
 //!
@@ -10,15 +10,15 @@
 //!   `higgs::Higgs::unsafe_system_valence`)
 //! - `#[server(auth)]` — also requires a session via `higgs::require_session`
 //!
-//! `permission = "..."` enforcement lands after the `gauge` crate extracts; it is
-//! **not** available in this release.
+//! `permission = "..."` on [`server`] is **not shipped** in this release (compile-time error
+//! if used). `higgs_core::server_runtime` helpers exist for hand-rolled permission checks.
 //!
 //! # Organized by task
 //!
 //! | Task | Start here |
 //! |------|------------|
 //! | Attribute a Leptos `#[server]` fn with operation context | [`server`] (attribute macro) — [example](#quick-example) |
-//! | Permission-gated server fns | not yet — see `permission = "..."` note above |
+//! | Permission-gated server fns | **not shipped** — `permission = "..."` rejects at compile time |
 //!
 //! # Typical usage
 //!
@@ -48,7 +48,7 @@
 //! }
 //! ```
 //!
-//! See also platform crate `higgs` crate-root docs for boot wiring and feature flags.
+//! See also package `higgs` crate-root docs for boot wiring and feature flags.
 use proc_macro::TokenStream;
 
 mod server;
@@ -56,7 +56,7 @@ mod server;
 /// Wrapper around Leptos `#[server]` that sets operation context before running
 /// the function body.
 ///
-/// Available without Cargo features on this crate. Pair with platform `higgs`
+/// Available without Cargo features on this crate. Pair with package `higgs`
 /// feature `ssr` so `Higgs::from_request` compiles in the host.
 ///
 /// # Usage
@@ -64,7 +64,7 @@ mod server;
 /// - `#[higgs_macros::server]` — public or self-authorized endpoints
 /// - `#[higgs_macros::server(auth)]` — requires `SessionSnapshot` (signed-in)
 ///
-/// `permission = "..."` is **not** available yet.
+/// `permission = "..."` is **not shipped** (compile-time error if used).
 ///
 /// # Examples
 ///

@@ -1,4 +1,4 @@
-//! Process-wide platform Higgs configuration.
+//! Process-wide Higgs configuration (Valence factory plus optional subsystem backends).
 
 use std::sync::Arc;
 
@@ -67,12 +67,12 @@ impl HiggsConfig {
         HiggsConfigBuilder::default()
     }
 
-    /// Shared thin-hub config (Valence factory only).
+    /// Core Valence/session config from [`higgs_core`].
     pub fn core(&self) -> &higgs_core::HiggsConfig {
         &self.core
     }
 
-    /// Shared thin-hub config as an `Arc`.
+    /// Core config as an `Arc`.
     pub fn core_arc(&self) -> Arc<higgs_core::HiggsConfig> {
         Arc::clone(&self.core)
     }
