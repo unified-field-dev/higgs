@@ -49,6 +49,7 @@
 //!         .actor()
 //!         .user_id()
 //!         .ok_or_else(|| ServerFnError::new("expected User actor"))?;
+//!     assert!(!user.is_empty(), "session user id is non-empty");
 //!     Ok(user.to_string())
 //! }
 //! ```
@@ -95,6 +96,7 @@ mod server;
 ///         .actor()
 ///         .user_id()
 ///         .ok_or_else(|| ServerFnError::new("expected User actor"))?;
+///     assert!(!user.is_empty(), "session user id is non-empty");
 ///     Ok(user.to_string())
 /// }
 /// ```

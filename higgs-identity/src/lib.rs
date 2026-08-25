@@ -28,6 +28,10 @@
 //!
 //! # Quick example
 //!
+//! Prerequisites: no Cargo features. Implement [`SessionIdentity`] on your product user
+//! type, call [`SessionIdentity::to_snapshot`], and store [`SessionSnapshot`] in Axum
+//! extensions so `higgs-host` / `higgs` can map it to a Valence `User` actor.
+//!
 //! ```rust
 //! use higgs_identity::{SessionIdentity, SessionSnapshot, SessionUserId};
 //!
@@ -55,7 +59,8 @@
 //! assert!(snap.auth_hash_eq(b"abc"));
 //! ```
 //!
-//! Next variant: [Auth-hash mismatch](#auth-hash-mismatch).
+//! Observable outcome: `snap.user_id` equals the session id and `auth_hash_eq` accepts the
+//! same hash bytes. Next variant: [Auth-hash mismatch](#auth-hash-mismatch).
 //!
 //! # Auth-hash mismatch
 //!

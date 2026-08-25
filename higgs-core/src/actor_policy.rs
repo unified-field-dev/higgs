@@ -17,11 +17,33 @@
 //!
 //! ```ignore
 //! use higgs_core::actor_policy::external_actor_json_policy;
-//! use valence::RouterValenceFactoryConfig;
+//! use valence::{ActorJsonPolicy, ActorTrust, RouterValenceFactoryConfig};
 //!
+//! // Host keeps `config` on the shared factory when rebuilding from actor JSON.
 //! let config = RouterValenceFactoryConfig::new("default")
 //!     .actor_json_policy(external_actor_json_policy());
-//! // Host factory uses `config` when rebuilding Valence from enqueue / event actor JSON.
+//! let policy = external_actor_json_policy();
+//! assert!(
+//!     policy
+//!         .validate(
+//!             ActorTrust::External,
+//!             &serde_json::json!({"System":{"operation":"x"}})
+//!         )
+//!         .is_err(),
+//!     "System must fail closed for External"
+//! );
+//! assert!(
+//!     policy
+//!         .validate(
+//!             ActorTrust::External,
+//!             &serde_json::json!({"User":{"user_id":"user:1"}})
+//!         )
+//!         .is_ok(),
+//!     "User actor allowed"
+//! );
+//! // `config` is what the host stores on the factory; policy checks above are the oracle.
+//! let installed = format!("{config:?}");
+//! assert!(!installed.is_empty());
 //! ```
 //!
 //! Next: package `higgs` SSR / worker docs for where the factory Arc is registered.
@@ -35,10 +57,20 @@ pub use valence::RejectExternalSystemActor;
 ///
 /// ```ignore
 /// use higgs_core::actor_policy::external_actor_json_policy;
-/// use valence::RouterValenceFactoryConfig;
+/// use valence::{ActorJsonPolicy, ActorTrust, RouterValenceFactoryConfig};
 ///
 /// let config = RouterValenceFactoryConfig::new("default")
 ///     .actor_json_policy(external_actor_json_policy());
+/// let policy = external_actor_json_policy();
+/// assert!(
+///     policy
+///         .validate(
+///             ActorTrust::External,
+///             &serde_json::json!({"System":{"operation":"x"}})
+///         )
+///         .is_err()
+/// );
+/// assert!(!format!("{config:?}").is_empty());
 /// ```
 #[must_use]
 pub const fn external_actor_json_policy() -> RejectExternalSystemActor {

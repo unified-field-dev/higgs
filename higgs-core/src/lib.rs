@@ -96,11 +96,38 @@
 //!
 //! Prerequisites: feature `preflight` (also enabled by `ssr`), database router installed.
 //!
-//! Run [`preflight::PreflightRunner`] once at host boot.
+//! Implement `preflight::PreflightCheck`, register on `preflight::PreflightRunner`,
+//! run once at host boot.
 //!
 //! ```rust,ignore
+//! use std::sync::Arc;
+//! use async_trait::async_trait;
 //! use higgs_core::preflight::{PreflightCheck, PreflightRunner, PreflightResult, PreflightStatus};
+//! use valence::{InMemoryBackend, Valence};
 //!
+//! struct AlwaysPass;
+//!
+//! #[async_trait]
+//! impl PreflightCheck for AlwaysPass {
+//!     fn name(&self) -> &'static str {
+//!         "demo-always-pass"
+//!     }
+//!     fn description(&self) -> &'static str {
+//!         "example check that always passes"
+//!     }
+//!     async fn check(&self, _valence: &Valence) -> PreflightResult {
+//!         PreflightResult {
+//!             check_name: self.name().to_string(),
+//!             status: PreflightStatus::Passed {
+//!                 message: "demo ok".into(),
+//!             },
+//!         }
+//!     }
+//! }
+//!
+//! let valence = Valence::builder()
+//!     .add_backend("default", Arc::new(InMemoryBackend::new()))
+//!     .build()?;
 //! let mut runner = PreflightRunner::new();
 //! runner.register(AlwaysPass);
 //! let results = runner.run_all(&valence).await;

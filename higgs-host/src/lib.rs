@@ -60,7 +60,7 @@
 //!
 //! # Data-plane only
 //!
-//! Prerequisites: feature `ssr`. Call [`unsafe_data_plane`] when you need the Valence
+//! Prerequisites: feature `ssr`. Call `unsafe_data_plane` when you need the Valence
 //! router without a session actor (boot/control-plane). Prefer session-scoped Valence
 //! via `higgs::Higgs::valence` for user CRUD.
 //!
@@ -77,7 +77,7 @@
 //!
 //! # Operation attribution
 //!
-//! Prerequisites: feature `ssr`. Wrap work in [`with_operation`] so [`current_operation`]
+//! Prerequisites: feature `ssr`. Wrap work in `with_operation` so `current_operation`
 //! (and `higgs::Higgs::unsafe_system_valence`) see a stable name.
 //!
 //! ```rust

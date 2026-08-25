@@ -9,15 +9,41 @@
 //! # Examples
 //!
 //! ```rust,ignore
-//! use higgs_core::preflight::{PreflightCheck, PreflightRunner};
+//! use std::sync::Arc;
+//! use async_trait::async_trait;
+//! use higgs_core::preflight::{
+//!     PreflightCheck, PreflightResult, PreflightRunner, PreflightStatus,
+//! };
+//! use valence::{InMemoryBackend, Valence};
 //!
+//! struct AlwaysPass;
+//!
+//! #[async_trait]
+//! impl PreflightCheck for AlwaysPass {
+//!     fn name(&self) -> &'static str {
+//!         "demo-always-pass"
+//!     }
+//!     fn description(&self) -> &'static str {
+//!         "example check that always passes"
+//!     }
+//!     async fn check(&self, _valence: &Valence) -> PreflightResult {
+//!         PreflightResult {
+//!             check_name: self.name().to_string(),
+//!             status: PreflightStatus::Passed {
+//!                 message: "demo ok".into(),
+//!             },
+//!         }
+//!     }
+//! }
+//!
+//! let valence = Valence::builder()
+//!     .add_backend("default", Arc::new(InMemoryBackend::new()))
+//!     .build()?;
 //! let mut runner = PreflightRunner::new();
-//! runner.register(MyCheck);
+//! runner.register(AlwaysPass);
 //! let results = runner.run_all(&valence).await;
-//! assert!(
-//!     !results.is_empty(),
-//!     "each registered check yields a PreflightResult"
-//! );
+//! assert_eq!(results.len(), 1);
+//! assert!(matches!(results[0].status, PreflightStatus::Passed { .. }));
 //! ```
 
 mod check;

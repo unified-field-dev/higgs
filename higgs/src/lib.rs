@@ -178,6 +178,7 @@
 //! async fn higgs_demo_cleanup(ctx: Box<dyn ScriptContext>) -> anyhow::Result<()> {
 //!     let valence = valence_from_context(&*ctx)?;
 //!     anyhow::ensure!(valence.actor().user_id() == Some("chronon-job-user"));
+//!     assert_eq!(valence.actor().user_id(), Some("chronon-job-user"));
 //!     Ok(())
 //! }
 //! ```
@@ -246,12 +247,38 @@
 //! Prerequisites: feature `preflight` (also enabled by `ssr`), database router installed,
 //! before background schedulers start.
 //!
-//! Register checks on [`preflight::PreflightRunner`], run once, retain results for any
-//! setup UI.
+//! Implement `preflight::PreflightCheck`, register on `preflight::PreflightRunner`,
+//! run once, retain results for any setup UI.
 //!
 //! ```rust,ignore
+//! use std::sync::Arc;
+//! use async_trait::async_trait;
 //! use higgs::preflight::{PreflightCheck, PreflightRunner, PreflightResult, PreflightStatus};
+//! use valence::{InMemoryBackend, Valence};
 //!
+//! struct AlwaysPass;
+//!
+//! #[async_trait]
+//! impl PreflightCheck for AlwaysPass {
+//!     fn name(&self) -> &'static str {
+//!         "demo-always-pass"
+//!     }
+//!     fn description(&self) -> &'static str {
+//!         "example check that always passes"
+//!     }
+//!     async fn check(&self, _valence: &Valence) -> PreflightResult {
+//!         PreflightResult {
+//!             check_name: self.name().to_string(),
+//!             status: PreflightStatus::Passed {
+//!                 message: "demo ok".into(),
+//!             },
+//!         }
+//!     }
+//! }
+//!
+//! let valence = Valence::builder()
+//!     .add_backend("default", Arc::new(InMemoryBackend::new()))
+//!     .build()?;
 //! let mut runner = PreflightRunner::new();
 //! runner.register(AlwaysPass);
 //! let results = runner.run_all(&valence).await;
@@ -285,6 +312,7 @@
 //!         .actor()
 //!         .user_id()
 //!         .ok_or_else(|| ServerFnError::new("expected User actor"))?;
+//!     assert_eq!(user, "demo-user");
 //!     Ok(user.to_string())
 //! }
 //! ```
