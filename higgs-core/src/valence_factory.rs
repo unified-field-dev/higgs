@@ -24,13 +24,16 @@ use valence::Valence;
 /// ```rust,no_run
 /// # #[cfg(feature = "test-utils")]
 /// # {
-/// use higgs_core::HiggsValenceFactory;
+/// use std::sync::Arc;
+/// use higgs_core::{HiggsConfig, HiggsValenceFactory};
 /// use higgs_core::test_support::UnreachableValenceFactory;
 ///
 /// // Host adapters usually delegate to RouterValenceFactory or a shared Arc<dyn ValenceFactory>.
-/// let factory: &dyn HiggsValenceFactory = &UnreachableValenceFactory;
-/// # let _ = factory;
+/// let factory: Arc<dyn HiggsValenceFactory> = Arc::new(UnreachableValenceFactory);
+/// let config = HiggsConfig::builder().valence_factory_arc(Arc::clone(&factory)).build()?;
+/// assert!(Arc::ptr_eq(config.valence_factory(), &factory));
 /// # }
+/// # Ok::<(), higgs_core::HiggsError>(())
 /// ```
 pub trait HiggsValenceFactory: Send + Sync + 'static {
     /// Build a [`Valence`] scoped to the actor described by `actor_json`.

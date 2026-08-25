@@ -1,4 +1,25 @@
-//! Shared test doubles for workspace crates.
+//! Test doubles for configuring [`crate::HiggsConfig`] without a live Valence backend.
+//!
+//! Enable with Cargo feature `test-utils` (or use these types from in-crate `#[cfg(test)]`).
+//! Downstream crates depend on `higgs-core` / `higgs` with `test-utils` and install
+//! `UnreachableValenceFactory` when the test only needs a built config, not
+//! [`HiggsValenceFactory::build`](crate::HiggsValenceFactory::build).
+//!
+//! ```rust,no_run
+//! # #[cfg(feature = "test-utils")]
+//! # fn demo() -> Result<(), higgs_core::HiggsError> {
+//! use higgs_core::{HiggsConfig, test_support::UnreachableValenceFactory};
+//!
+//! let config = HiggsConfig::builder()
+//!     .valence_factory(UnreachableValenceFactory)
+//!     .build()?;
+//! assert!(std::sync::Arc::strong_count(config.valence_factory()) >= 1);
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! Calling `UnreachableValenceFactory::build` panics — intentional so accidental Valence
+//! construction fails loudly in unit tests.
 
 use std::sync::Arc;
 

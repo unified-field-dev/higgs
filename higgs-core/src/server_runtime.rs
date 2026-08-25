@@ -5,6 +5,10 @@
 //! recover structured [`PermissionErrorPayload`](crate::server_runtime::PermissionErrorPayload)
 //! via [`parse_permission_error_payload`](crate::server_runtime::parse_permission_error_payload).
 //!
+//! Prerequisites: hand-rolled permission checks in a server function (the
+//! `permission = "..."` macro attribute is not shipped yet). First success: encode a
+//! denied payload, then parse it back to the typed variant.
+//!
 //! # Examples
 //!
 //! ```rust
@@ -20,6 +24,9 @@
 //!     })
 //! );
 //! ```
+//!
+//! Unrelated or empty-prefix messages parse to `None`. Next: package `higgs` macros docs
+//! for auth/session wiring; keep using these helpers until `permission =` ships.
 
 use std::future::Future;
 

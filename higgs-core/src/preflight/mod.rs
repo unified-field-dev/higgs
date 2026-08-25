@@ -14,7 +14,10 @@
 //! let mut runner = PreflightRunner::new();
 //! runner.register(MyCheck);
 //! let results = runner.run_all(&valence).await;
-//! let _ = results;
+//! assert!(
+//!     !results.is_empty(),
+//!     "each registered check yields a PreflightResult"
+//! );
 //! ```
 
 mod check;

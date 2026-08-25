@@ -49,7 +49,13 @@ impl Higgs {
     ///
     /// let ctx = Higgs::from_request().await?;
     /// let valence = ctx.valence().map_err(leptos::prelude::ServerFnError::new)?;
-    /// let _ = valence;
+    /// let actor = valence.actor();
+    /// assert!(
+    ///     matches!(
+    ///         actor,
+    ///         valence::Actor::Anonymous | valence::Actor::User { .. } | valence::Actor::System { .. }
+    ///     )
+    /// );
     /// # Ok(())
     /// # }
     /// ```
@@ -111,7 +117,13 @@ impl Higgs {
     /// # #[cfg(feature = "ssr")]
     /// # async fn demo(ctx: &higgs::Higgs) -> Result<(), leptos::prelude::ServerFnError> {
     /// let valence = ctx.valence().map_err(leptos::prelude::ServerFnError::new)?;
-    /// let _ = valence.actor();
+    /// let actor = valence.actor();
+    /// assert!(
+    ///     matches!(
+    ///         actor,
+    ///         valence::Actor::Anonymous | valence::Actor::User { .. } | valence::Actor::System { .. }
+    ///     )
+    /// );
     /// # Ok(())
     /// # }
     /// ```
@@ -139,7 +151,7 @@ impl Higgs {
     /// ```rust,ignore
     /// // Prefer with_operation / #[higgs_macros::server] so the System actor is attributed.
     /// let valence = ctx.unsafe_system_valence()?;
-    /// let _ = valence.actor();
+    /// assert!(matches!(valence.actor(), valence::Actor::System { .. }));
     /// ```
     pub fn unsafe_system_valence(&self) -> Result<valence::Valence, HiggsError> {
         self.inner.unsafe_system_valence().map_err(HiggsError::from)
@@ -173,7 +185,7 @@ impl Higgs {
     /// ```rust,ignore
     /// // SSR: enqueue / inspect after HiggsConfig::builder().chronon(...).build()
     /// let backend = ctx.chronon()?;
-    /// let _ = backend;
+    /// let _: &dyn chronon_coordinator::ChrononCoordinatorBackend = backend;
     /// ```
     #[cfg(feature = "chronon")]
     pub fn chronon(
@@ -224,7 +236,7 @@ impl Higgs {
     /// ```rust,ignore
     /// // SSR: publish / subscribe after HiggsConfig::builder().photon(...).build()
     /// let photon = ctx.photon()?;
-    /// let _ = photon;
+    /// let _: &photon::Photon = photon;
     /// ```
     #[cfg(feature = "photon")]
     pub fn photon(&self) -> Result<&photon::Photon, HiggsError> {
@@ -250,7 +262,7 @@ impl Higgs {
     /// ```rust,ignore
     /// // SSR: enqueue after HiggsConfig::builder().boson(...).build()
     /// let backend = ctx.boson()?;
-    /// let _ = backend;
+    /// let _: &dyn boson_coordinator::BosonCoordinatorBackend = backend;
     /// ```
     #[cfg(feature = "boson")]
     pub fn boson(&self) -> Result<&dyn boson_coordinator::BosonCoordinatorBackend, HiggsError> {

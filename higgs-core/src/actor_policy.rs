@@ -1,11 +1,17 @@
 //! Host guidance for Valence actor-JSON policies on shared factories.
 //!
-//! SSR [`crate::Higgs::unsafe_system_valence`] **explicitly mints** a System actor and must
+//! SSR `Higgs::unsafe_system_valence` **explicitly mints** a System actor and must
 //! remain distinct from untrusted JSON paths (enqueue / event / schedule payloads that
 //! carry `actor_json`). For those external edges, install
 //! [`crate::actor_policy::external_actor_json_policy`] on
 //! `RouterValenceFactoryConfig` (or your host factory wrapper) with
 //! `valence::ActorTrust::External`.
+//!
+//! Prerequisites: a host factory that rebuilds Valence from enqueue / event / schedule
+//! `actor_json`. First success: attach the policy when building the shared factory, then
+//! rebuild Valence from external actor JSON — System JSON fails closed. Runnable demo:
+//! `cargo run -p higgs --example shared_factory --features ssr` (prints that external
+//! System was rejected).
 //!
 //! # Examples
 //!
@@ -15,7 +21,10 @@
 //!
 //! let config = RouterValenceFactoryConfig::new("default")
 //!     .actor_json_policy(external_actor_json_policy());
+//! // Host factory uses `config` when rebuilding Valence from enqueue / event actor JSON.
 //! ```
+//!
+//! Next: package `higgs` SSR / worker docs for where the factory Arc is registered.
 
 /// Re-export of Valence's fail-closed policy for untrusted `actor_json`.
 pub use valence::RejectExternalSystemActor;

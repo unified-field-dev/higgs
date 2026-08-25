@@ -2,64 +2,21 @@
 //!
 //! Valence/session hub: config, preflight, and per-request context for server functions.
 //!
-//! Host wiring for Valence-backed server functions: [`HiggsConfig`], startup [`preflight`],
-//! [`server_runtime`], and per-request [`Higgs::from_request`] via `higgs-host` +
-//! `higgs-identity`.
-//!
-//! Provides Valence factory + session-scoped request context. For Chronon / Boson / Photon
-//! accessors on the same request, depend on package `higgs` (this repository's `higgs` crate).
-//!
-//! ## Capabilities
+//! ## Features
 //!
 //! - **Config** — [`HiggsConfig`] / [`HiggsConfigBuilder`] hold a
 //!   [`HiggsValenceFactory`]; build once at host boot and store as
-//!   `Arc<HiggsConfig>` in Leptos context
+//!   `Arc<HiggsConfig>` in Leptos context — [Quick example](#quick-example)
 //! - **Factory** — host-implemented [`HiggsValenceFactory`] builds request-scoped
-//!   `valence::Valence` from serialized actor JSON
-//! - **Request context** — [`Higgs`] (feature `ssr`) via [`Higgs::from_request`];
-//!   wraps `higgs_host::HostRequestCtx` plus session user id and config
-//! - **Server helpers** — [`server_runtime`] permission-denied payload encode/decode
-//!   for `higgs-macros`-generated server functions
-//! - **Startup** — [`preflight`] (feature `preflight`) runs validation/seeding once
-//!   after the database router is installed
+//!   `valence::Valence` from serialized actor JSON — [Quick example](#quick-example)
+//! - **Request context** — `Higgs` (feature `ssr`) via `Higgs::from_request` —
+//!   [Per-request context](#per-request-context-ssr)
+//! - **Server helpers** — [`server_runtime`] permission-denied payload encode/decode —
+//!   [`server_runtime`] module
+//! - **Startup** — `preflight` (feature `preflight`) after the database router is
+//!   installed — [Startup preflight](#startup-preflight)
 //! - **Actor policy** — [`actor_policy`] helpers such as
-//!   [`actor_policy::external_actor_json_policy`] for external actor JSON
-//!
-//! # Organized by task
-//!
-//! | Task | Start here |
-//! |------|------------|
-//! | Boot config / Valence factory | [`HiggsConfig`], [`HiggsConfig::builder`], [`HiggsValenceFactory`] |
-//! | Per-request context (SSR) | [`Higgs`], [`Higgs::from_request`] (feature `ssr`) |
-//! | Server-function encode/decode helpers | [`server_runtime`] |
-//! | Startup validation / seeding | [`preflight`] (feature `preflight`) |
-//! | External actor JSON policy | [`actor_policy`] |
-//! | Chronon / Boson / Photon accessors | not here — depend on package `higgs` instead |
-//!
-//! # Typical host flow
-//!
-//! 1. Implement [`HiggsValenceFactory`].
-//! 2. Build [`HiggsConfig`] via [`HiggsConfig::builder`], provide `Arc` in Leptos
-//!    context.
-//! 3. Call [`Higgs::from_request`] inside server functions (feature `ssr`).
-//! 4. Optionally run [`preflight::PreflightRunner`] after the DB router is up.
-//!
-//! Runnable samples (`higgs` package):
-//! `cargo run -p higgs --example config_boot`,
-//! `cargo run -p higgs --example shared_factory --features ssr`,
-//! `cargo run -p higgs --example preflight_boot --features preflight`.
-//! See `higgs/examples/README.md`.
-//!
-//! For Chronon / Boson / Photon accessors on the same request, depend on package `higgs`
-//! instead of `higgs-core` alone.
-//!
-//! # Feature flags
-//!
-//! | Feature | What it enables |
-//! |---------|-----------------|
-//! | `ssr` | [`Higgs`], [`Higgs::from_request`], `higgs-host` / Leptos SSR, enables `preflight` |
-//! | `preflight` | [`preflight`] module (also enabled by `ssr`) |
-//! | `test-utils` | [`test_support`] doubles for downstream tests |
+//!   [`actor_policy::external_actor_json_policy`] — [`actor_policy`] module
 //!
 //! # Quick example
 //!
@@ -75,20 +32,100 @@
 //!         .build()?,
 //! );
 //! // provide_context(config) at host boot; Higgs::from_request reads it (feature ssr).
-//! # let _ = config;
+//! assert!(
+//!     Arc::strong_count(&config) >= 1,
+//!     "boot succeeds when valence_factory is set"
+//! );
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! Observable boot: `cargo run -p higgs --example config_boot` prints
+//! `HiggsConfig booted with in-memory Valence factory (anonymous + user OK)`.
+//!
+//! Typical sequence: implement [`HiggsValenceFactory`] → build [`HiggsConfig`] →
+//! provide `Arc` in Leptos context → (feature `ssr`) `Higgs::from_request` → optional
+//! `preflight::PreflightRunner` after the DB router is up.
+//!
+//! Next: [Per-request context](#per-request-context-ssr), [Startup preflight](#startup-preflight),
+//! [`server_runtime`], or [`actor_policy`].
+//!
+//! # Feature flags
+//!
+//! | Feature | What it enables |
+//! |---------|-----------------|
+//! | `ssr` | `Higgs`, `Higgs::from_request`, `higgs-host` / Leptos SSR, enables `preflight` |
+//! | `preflight` | `preflight` module (also enabled by `ssr`) |
+//! | `test-utils` | `test_support` doubles for downstream tests |
+//!
+//! # Per-request context (SSR)
+//!
+//! Prerequisites: feature `ssr`, `Arc<HiggsConfig>` in Leptos context, Valence router
+//! (and optional session snapshot) in Axum extensions via `higgs-host`.
+//!
+//! Call `Higgs::from_request` inside server functions; use `valence()` for the session
+//! actor.
+//!
+//! ```rust,no_run
+//! # #[cfg(all(feature = "ssr", feature = "test-utils"))]
+//! # async fn demo() -> Result<(), leptos::prelude::ServerFnError> {
+//! use higgs_core::Higgs;
+//!
+//! let ctx = Higgs::from_request().await?;
+//! let valence = ctx.valence().map_err(leptos::prelude::ServerFnError::new)?;
+//! let actor = valence.actor();
+//! assert!(
+//!     matches!(
+//!         actor,
+//!         valence::Actor::Anonymous | valence::Actor::User { .. } | valence::Actor::System { .. }
+//!     )
+//! );
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! Observable outcome:
+//! `cargo run -p higgs --example shared_factory --features ssr` prints that interactive
+//! and worker rebuild succeeded (external System rejected).
+//!
+//! Errors surface as [`HiggsError`] (missing context, internal Valence/actor failures).
+//! For Chronon / Boson / Photon accessors on the same request, depend on package `higgs`.
+//! Next: [Startup preflight](#startup-preflight).
+//!
+//! # Startup preflight
+//!
+//! Prerequisites: feature `preflight` (also enabled by `ssr`), database router installed.
+//!
+//! Run [`preflight::PreflightRunner`] once at host boot.
+//!
+//! ```rust,ignore
+//! use higgs_core::preflight::{PreflightCheck, PreflightRunner, PreflightResult, PreflightStatus};
+//!
+//! let mut runner = PreflightRunner::new();
+//! runner.register(AlwaysPass);
+//! let results = runner.run_all(&valence).await;
+//! assert_eq!(results.len(), 1);
+//! assert!(matches!(results[0].status, PreflightStatus::Passed { .. }));
+//! ```
+//!
+//! Observable outcome:
+//! `cargo run -p higgs --example preflight_boot --features preflight` prints
+//! `preflight: demo-always-pass — Passed { … }`.
+//!
+//! Failed checks preserve status on the returned results. Next: [`actor_policy`] for
+//! external actor JSON, or package `higgs` for subsystem accessors.
 //!
 //! # Notes
 //!
 //! - Failures surface as [`HiggsError`] (missing context, internal Valence/actor
 //!   errors). See the [crate root example](#quick-example) for builder wiring.
+//! - Host wiring that needs Chronon / Boson / Photon accessors belongs on package
+//!   `higgs`, not this crate alone.
 
 // Clippy sometimes emits `too_long_first_doc_paragraph` without a span on libtest builds.
 #![allow(clippy::too_long_first_doc_paragraph)]
 
-/// Actor-JSON policy helpers for shared Valence factories (HIGGS-11).
+/// Actor-JSON policy helpers for shared Valence factories.
 pub mod actor_policy;
 mod config;
 mod error;
@@ -109,9 +146,7 @@ pub use valence_factory::HiggsValenceFactory;
 #[cfg(feature = "ssr")]
 pub use context::Higgs;
 
-/// Shared test doubles for downstream crates' own tests.
-///
-/// For example [`test_support::UnreachableValenceFactory`].
+/// Shared test doubles for downstream crates' own tests (see module docs).
 #[cfg(any(test, feature = "test-utils"))]
 pub mod test_support;
 

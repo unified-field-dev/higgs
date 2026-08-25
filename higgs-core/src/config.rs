@@ -21,8 +21,8 @@ use crate::HiggsValenceFactory;
 /// let config = HiggsConfig::builder()
 ///     .valence_factory(UnreachableValenceFactory)
 ///     .build()?;
-/// let _factory = config.valence_factory();
-/// # let _ = config;
+/// let factory = config.valence_factory();
+/// assert!(std::sync::Arc::strong_count(factory) >= 1);
 /// # Ok(())
 /// # }
 /// ```
@@ -43,7 +43,7 @@ impl HiggsConfig {
     /// let config = HiggsConfig::builder()
     ///     .valence_factory(UnreachableValenceFactory)
     ///     .build()?;
-    /// # let _ = config;
+    /// assert!(std::sync::Arc::strong_count(config.valence_factory()) >= 1);
     /// # Ok(())
     /// # }
     /// ```

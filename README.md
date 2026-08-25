@@ -11,6 +11,7 @@ server functions, Chronon jobs, Boson tasks, and Photon handlers.
 ```rust
 use higgs::Higgs;
 use leptos::prelude::*;
+use valence::Actor;
 
 #[higgs_macros::server(auth)]
 pub async fn create_order(/* … */) -> Result<(), ServerFnError> {
@@ -18,16 +19,20 @@ pub async fn create_order(/* … */) -> Result<(), ServerFnError> {
 
     // Request-scoped Valence with the current session actor.
     let valence = ctx.valence()?;
+    let actor = valence.actor();
+    assert!(matches!(
+        actor,
+        Actor::Anonymous | Actor::User { .. } | Actor::System { .. }
+    ));
 
     // Prefer valence() for user work. System elevation is an explicit escape hatch:
-    // let _sys = ctx.unsafe_system_valence()?;
+    // let sys = ctx.unsafe_system_valence()?;
 
     // With features = ["full"] (or chronon / boson / photon individually):
-    // let _photon = ctx.photon()?;
-    // let _chronon = ctx.chronon()?;
-    // let _boson = ctx.boson()?;
+    // let photon = ctx.photon()?;
+    // let chronon = ctx.chronon()?;
+    // let boson = ctx.boson()?;
 
-    let _ = valence;
     Ok(())
 }
 ```
@@ -112,6 +117,7 @@ export CARGO_BUILD_JOBS=1
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo test --workspace --all-features
+RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --all-features
 ```
 
 ## Workspace
