@@ -7,26 +7,31 @@
 //!
 //! ## Features
 //!
-//! - **Shared Valence factory** — implement [`HiggsValenceFactory`], store it on
-//!   [`HiggsConfig`]; also expose `valence::ValenceFactory` so Chronon / Boson /
-//!   Photon workers rebuild Valence from the same factory + actor JSON —
-//!   [Getting started](#getting-started)
-//! - **Request context** — `Higgs::from_request` (feature `ssr`) assembles router,
-//!   session actor, and config for Leptos server functions —
+//! - **Shared Valence factory** — One host factory on [`HiggsConfig`] rebuilds Valence for
+//!   server functions and Chronon / Boson / Photon workers from the same actor JSON.
+//!   Wire it at process boot. [Getting started](#getting-started)
+//! - **Request context** — Per HTTP request, `Higgs::from_request` (feature `ssr`) builds
+//!   the router, session actor, and config for Leptos server functions.
 //!   [SSR](#ssr--leptos-server-functions)
-//! - **Valence accessors** — `Higgs::valence` (session actor) and
-//!   `Higgs::unsafe_system_valence` (operation-tagged `System` actor) —
-//!   [SSR](#ssr--leptos-server-functions)
-//! - **Subsystem accessors** — feature-gated `Higgs::chronon`, `Higgs::boson`,
-//!   `Higgs::photon` when the host registered backends on the builder —
-//!   [Workers](#workers--chronon--boson--photon)
-//! - **Startup preflight** — `preflight` (with `ssr` / `preflight`) after the
-//!   database router is installed — [Preflight at startup](#preflight-at-startup)
-//! - **Permission helpers** — [`server_runtime`] encode/decode for permission-denied
-//!   payloads (manual checks). `#[higgs_macros::server(permission = "...")]` is
-//!   **not shipped** — see [Macros and session](#macros-and-session)
+//! - **Valence accessors** — After `from_request`, `Higgs::valence` uses the session actor;
+//!   `Higgs::unsafe_system_valence` creates an operation-tagged `System` actor for privileged
+//!   work. [SSR](#ssr--leptos-server-functions)
+//! - **Subsystem accessors** — When the host registered backends on the builder, SSR code
+//!   calls Chronon / Boson / Photon through `Higgs::chronon` / `boson` / `photon`.
+//!   Worker Valence recovery lives under [Workers](#workers--chronon--boson--photon).
+//! - **Startup preflight** — Host-owned boot checks and idempotent seed hooks: run once after
+//!   the database router is up and before schedulers, keep structured pass/fail for logs or
+//!   setup UI. [Preflight at startup](#preflight-at-startup)
+//! - **Macros and session** — Lets Leptos `#[server]` handlers set the Higgs operation name
+//!   and optionally require a signed-in session before the body runs (per request).
+//!   [Macros and session](#macros-and-session)
+//! - **Permission helpers** — Provides encode/decode helpers for hand-rolled permission-denied
+//!   payloads ([`server_runtime`]). The `permission = "..."` macro attribute is not shipped.
 //!
 //! # Getting started
+//!
+//! Higgs boots a process-wide [`HiggsConfig`] (shared Valence factory plus optional backends),
+//! then serves requests and workers from that same factory. The host owns boot order.
 //!
 //! 1. Implement a host Valence factory (usually both [`HiggsValenceFactory`] for this
 //!    crate and `valence::ValenceFactory` for Chronon / Boson / Photon identity adapters).
@@ -37,8 +42,8 @@
 //!    `ExecutionContextFactory`, and Photon identity / executor wiring (see
 //!    [Workers](#workers--chronon--boson--photon)).
 //! 5. SSR: `Higgs::from_request` → `valence()` / subsystem accessors.
-//! 6. Workers: recover Valence from that family's context helper — **not**
-//!    `Higgs::from_request` (no Leptos request).
+//! 6. Workers: recover Valence from that family's context helper — workers have no Leptos
+//!    request, so they do not call `Higgs::from_request`.
 //! 7. Optionally run `preflight` after the database router is installed and before
 //!    schedulers start.
 //!
@@ -110,6 +115,9 @@
 //! See `higgs/examples/README.md` for the teaching path and success stdout lines.
 //!
 //! # SSR — Leptos server functions
+//!
+//! Per-request Valence for Leptos server functions: the host provides `Arc<HiggsConfig>`,
+//! and `Higgs::from_request` builds router + session actor for the current call.
 //!
 //! Prerequisites: feature `ssr`, `Arc<HiggsConfig>` in Leptos context, session middleware
 //! when using `#[higgs_macros::server(auth)]`.
@@ -244,6 +252,12 @@
 //!
 //! # Preflight at startup
 //!
+//! Startup checks and idempotent seed hooks the host runs once at boot. After the database
+//! router is up and before background schedulers start, register `PreflightCheck`s, call
+//! `PreflightRunner::run_all`, and keep the returned statuses (for logs or an auth-gated
+//! setup UI). Prefer this for boot-visible validation and seeding instead of only Chronon
+//! `RunOnce` jobs.
+//!
 //! Prerequisites: feature `preflight` (also enabled by `ssr`), database router installed,
 //! before background schedulers start.
 //!
@@ -294,6 +308,10 @@
 //! Next: [SSR](#ssr--leptos-server-functions) or [Workers](#workers--chronon--boson--photon).
 //!
 //! # Macros and session
+//!
+//! Lets Leptos server functions set a task-local operation name (and optionally require a
+//! signed-in session) before the body runs. Use this when writing `#[server]` handlers that
+//! call `Higgs::from_request` per request.
 //!
 //! Prerequisites: package `higgs` with feature `ssr`, dependency on `higgs-macros`,
 //! `provide_context(Arc<HiggsConfig>)`, and host middleware that inserts

@@ -6,16 +6,19 @@
 //!
 //! ## Features
 //!
-//! - [`server`] — wraps Leptos `#[server]`, sets the task-local operation name before
-//!   the body runs (read by `higgs_host::current_operation` /
-//!   `higgs::Higgs::unsafe_system_valence`) — [Quick example](#quick-example)
-//! - `#[server(auth)]` — also requires a session via `higgs::require_session` —
+//! - **server** — Wraps Leptos `#[server]` and sets the task-local operation name before
+//!   the body runs (read by `current_operation` / `unsafe_system_valence`).
 //!   [Quick example](#quick-example)
+//! - **server(auth)** — Same as `server`, and requires a signed-in session via
+//!   `higgs::require_session`. [Quick example](#quick-example)
 //!
 //! `permission = "..."` on [`server`] is **not shipped** in this release (compile-time error
 //! if used). `higgs_core::server_runtime` helpers exist for hand-rolled permission checks.
 //!
 //! # Getting started
+//!
+//! Depend on package `higgs` (feature `ssr`) and annotate Leptos server functions so Higgs
+//! can attribute the call and optionally require a session.
 //!
 //! 1. Depend on `higgs` (package name **`higgs`**, feature `ssr`) and `higgs-macros`.
 //! 2. Annotate server functions with Leptos `#[server]` and [`server`].
@@ -26,6 +29,9 @@
 //! exercises the macro + request context path and prints a success line.
 //!
 //! # Quick example
+//!
+//! Write a public or `(auth)` server function that calls `Higgs::from_request` and reads
+//! the session actor.
 //!
 //! Prerequisites: `higgs` with feature `ssr`, `provide_context(Arc<HiggsConfig>)`, and
 //! session middleware when using `(auth)`.

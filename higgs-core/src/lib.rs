@@ -4,21 +4,27 @@
 //!
 //! ## Features
 //!
-//! - **Config** — [`HiggsConfig`] / [`HiggsConfigBuilder`] hold a
-//!   [`HiggsValenceFactory`]; build once at host boot and store as
-//!   `Arc<HiggsConfig>` in Leptos context — [Quick example](#quick-example)
-//! - **Factory** — host-implemented [`HiggsValenceFactory`] builds request-scoped
-//!   `valence::Valence` from serialized actor JSON — [Quick example](#quick-example)
-//! - **Request context** — `Higgs` (feature `ssr`) via `Higgs::from_request` —
+//! - **Config** — [`HiggsConfig`] holds the host Valence factory for the process. Build once
+//!   at boot and store `Arc<HiggsConfig>` in Leptos context.
+//!   [Quick example](#quick-example)
+//! - **Factory** — Implement [`HiggsValenceFactory`] so each request or worker rebuilds
+//!   `valence::Valence` from serialized actor JSON with your router policy.
+//!   [Quick example](#quick-example)
+//! - **Request context** — Feature `ssr`: `Higgs::from_request` gives server functions a
+//!   per-request handle to Valence and config.
 //!   [Per-request context](#per-request-context-ssr)
-//! - **Server helpers** — [`server_runtime`] permission-denied payload encode/decode —
-//!   [`server_runtime`] module
-//! - **Startup** — `preflight` (feature `preflight`) after the database router is
-//!   installed — [Startup preflight](#startup-preflight)
-//! - **Actor policy** — [`actor_policy`] helpers such as
-//!   [`actor_policy::external_actor_json_policy`] — [`actor_policy`] module
+//! - **Server helpers** — Encode and parse permission-denied payloads when you check
+//!   permissions by hand ([`server_runtime`]).
+//! - **Startup** — Host-owned preflight: run checks once after the database router is
+//!   installed and before schedulers, keep structured results.
+//!   [Startup preflight](#startup-preflight)
+//! - **Actor policy** — Fail-closed helpers for rebuilding Valence from untrusted
+//!   enqueue/event actor JSON ([`actor_policy`]).
 //!
 //! # Quick example
+//!
+//! Boot the shared config with a host Valence factory, then hand `Arc<HiggsConfig>` to
+//! Leptos (and optionally run preflight after the router is up).
 //!
 //! ```rust,no_run
 //! # #[cfg(feature = "test-utils")]
@@ -60,6 +66,9 @@
 //!
 //! # Per-request context (SSR)
 //!
+//! Builds Valence for the current caller on each per-request server function from Leptos
+//! context and Axum extensions (via `higgs-host`).
+//!
 //! Prerequisites: feature `ssr`, `Arc<HiggsConfig>` in Leptos context, Valence router
 //! (and optional session snapshot) in Axum extensions via `higgs-host`.
 //!
@@ -93,6 +102,11 @@
 //! Next: [Startup preflight](#startup-preflight).
 //!
 //! # Startup preflight
+//!
+//! Startup checks and idempotent seed hooks the host runs once at boot. After the database
+//! router is up and before background schedulers start, register checks, call
+//! `PreflightRunner::run_all`, and keep the returned statuses. Prefer this for boot-visible
+//! validation and seeding instead of only Chronon `RunOnce` jobs.
 //!
 //! Prerequisites: feature `preflight` (also enabled by `ssr`), database router installed.
 //!

@@ -1,12 +1,15 @@
 //! Startup validation and idempotent seeding hooks (preflight).
 //!
-//! Run a [`PreflightRunner`](crate::preflight::PreflightRunner) once during host startup
-//! after the global database router is installed and before background schedulers, so
-//! seeding work is visible and structured instead of only via Chronon `RunOnce` jobs.
+//! The host runs a [`PreflightRunner`](crate::preflight::PreflightRunner) once during
+//! process startup after the global database router is installed and before background
+//! schedulers, so seeding and validation stay visible and structured instead of only
+//! Chronon `RunOnce` jobs. Keep the returned statuses for logs or an auth-gated setup UI.
 //!
 //! Runnable: `cargo run -p higgs --example preflight_boot --features preflight`
 //!
 //! # Examples
+//!
+//! Implement a check, register it, run once against Valence, and assert Passed.
 //!
 //! ```rust,ignore
 //! use std::sync::Arc;

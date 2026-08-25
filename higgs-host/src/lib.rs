@@ -5,17 +5,22 @@
 //!
 //! ## Features
 //!
-//! - **Full request context** — `HostRequestCtx` via `host_ctx` (feature `ssr`):
-//!   router + optional `higgs_identity::SessionSnapshot` —
+//! - **Full request context** — `host_ctx` (feature `ssr`) loads the Valence router and
+//!   optional session snapshot into `HostRequestCtx` for server functions and extractors.
 //!   [Quick example](#quick-example)
-//! - **Data plane only** — `DataPlaneCtx` via `unsafe_data_plane` (deprecated
-//!   `data_plane`) — [Data-plane only](#data-plane-only)
-//! - **Session gate** — `require_session` fail-closed for `#[higgs_macros::server(auth)]` —
-//!   [Quick example](#quick-example)
-//! - **Operation tagging** — `with_operation` / `current_operation` for logs and
-//!   system-actor attribution — [Operation attribution](#operation-attribution)
+//! - **Data plane only** — `unsafe_data_plane` returns the router without a session actor
+//!   for boot or control-plane paths. Prefer session-scoped Valence for user CRUD.
+//!   [Data-plane only](#data-plane-only)
+//! - **Session gate** — `require_session` fails closed when `#[higgs_macros::server(auth)]`
+//!   needs a signed-in `SessionSnapshot`. [Quick example](#quick-example)
+//! - **Operation tagging** — `with_operation` / `current_operation` set a task-local name
+//!   for logs and `unsafe_system_valence` attribution.
+//!   [Operation attribution](#operation-attribution)
 //!
 //! # Getting started
+//!
+//! Host middleware inserts the session snapshot; server functions call `host_ctx` (or
+//! platform `higgs::Higgs::from_request`) to map that snapshot to a Valence actor.
 //!
 //! 1. Host middleware inserts `Extension<SessionSnapshot>` when authenticated.
 //! 2. Server function calls `host_ctx` (or platform `higgs::Higgs::from_request`).
@@ -26,6 +31,9 @@
 //! prints `axum_session_host: OK — session → Higgs → worker factory`.
 //!
 //! # Quick example
+//!
+//! Provides full host context in a server function per request: router plus optional
+//! session mapped to a Valence actor (`User` or `Anonymous`).
 //!
 //! Prerequisites: feature `ssr`, Valence `DatabaseRouter` in Axum extensions.
 //!
@@ -60,6 +68,9 @@
 //!
 //! # Data-plane only
 //!
+//! Gives the Valence router alone when boot or control-plane code must not carry a session
+//! actor. Prefer `higgs::Higgs::valence` for user-scoped CRUD.
+//!
 //! Prerequisites: feature `ssr`. Call `unsafe_data_plane` when you need the Valence
 //! router without a session actor (boot/control-plane). Prefer session-scoped Valence
 //! via `higgs::Higgs::valence` for user CRUD.
@@ -76,6 +87,9 @@
 //! [Operation attribution](#operation-attribution).
 //!
 //! # Operation attribution
+//!
+//! Sets a stable operation name on async work so logs and `unsafe_system_valence` see the
+//! same string for the duration of the future.
 //!
 //! Prerequisites: feature `ssr`. Wrap work in `with_operation` so `current_operation`
 //! (and `higgs::Higgs::unsafe_system_valence`) see a stable name.

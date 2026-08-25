@@ -7,14 +7,18 @@
 //!
 //! ## Features
 //!
-//! - [`SessionUserId`] — stable session user identifier type —
+//! - **[`SessionUserId`]** — Stable session user id type hosts store on snapshots and compare
+//!   across reloads. [Quick example](#quick-example)
+//! - **[`SessionSnapshot`]** — Minimal authenticated session for Axum extensions so extractors
+//!   can map to a Valence actor without importing product user models.
 //!   [Quick example](#quick-example)
-//! - [`SessionSnapshot`] — minimal authenticated session for Axum extensions —
-//!   [Quick example](#quick-example)
-//! - [`SessionIdentity`] — adapt a concrete user type via
-//!   [`SessionIdentity::to_snapshot`] — [Quick example](#quick-example)
+//! - **[`SessionIdentity`]** — Adapt a concrete user type with `to_snapshot` for middleware
+//!   that inserts `SessionSnapshot`. [Quick example](#quick-example)
 //!
 //! # Getting started
+//!
+//! Product user types implement [`SessionIdentity`]; middleware stores [`SessionSnapshot`]
+//! so `higgs-host` / `higgs` can map the request to a Valence `User` (or `Anonymous`).
 //!
 //! 1. Implement [`SessionIdentity`] on your product user type.
 //! 2. Middleware calls [`SessionIdentity::to_snapshot`] and inserts
@@ -27,6 +31,9 @@
 //! [`SessionSnapshot::auth_hash_eq`] for hosts that reload and compare hashes.
 //!
 //! # Quick example
+//!
+//! Builds a [`SessionSnapshot`] from a product user type for Axum extensions so
+//! `higgs-host` / `higgs` can map the request to a Valence `User` actor.
 //!
 //! Prerequisites: no Cargo features. Implement [`SessionIdentity`] on your product user
 //! type, call [`SessionIdentity::to_snapshot`], and store [`SessionSnapshot`] in Axum
@@ -63,6 +70,9 @@
 //! same hash bytes. Next variant: [Auth-hash mismatch](#auth-hash-mismatch).
 //!
 //! # Auth-hash mismatch
+//!
+//! After reload, compare the stored snapshot hash to the current identity-store hash to
+//! decide whether the session is stale. Mismatch or length difference returns `false`.
 //!
 //! Prerequisites: a stored [`SessionSnapshot`] and the current user auth-hash bytes from
 //! your identity store. Hosts call [`SessionSnapshot::auth_hash_eq`] after reload to decide

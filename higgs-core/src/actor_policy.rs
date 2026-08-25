@@ -15,6 +15,9 @@
 //!
 //! # Examples
 //!
+//! Install the fail-closed policy on the shared factory config, then validate external
+//! actor JSON (System rejected, User allowed).
+//!
 //! ```ignore
 //! use higgs_core::actor_policy::external_actor_json_policy;
 //! use valence::{ActorJsonPolicy, ActorTrust, RouterValenceFactoryConfig};

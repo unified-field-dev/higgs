@@ -11,6 +11,8 @@
 //!
 //! # Examples
 //!
+//! Builds a denied-permission payload string, then parses it back to the typed variant.
+//!
 //! ```rust
 //! use higgs_core::server_runtime::{
 //!     parse_permission_error_payload, permission_denied_payload, PermissionErrorPayload,
