@@ -4,7 +4,7 @@
 //!
 //! ## Features
 //!
-//! - **Config** — [`HiggsConfig`] holds the host Valence factory for the process. Build once
+//! - **Shared config** — [`HiggsConfig`] holds the host Valence factory for the process. Build once
 //!   at boot and store `Arc<HiggsConfig>` in Leptos context.
 //!   [Quick example](#quick-example)
 //! - **Factory** — Implement [`HiggsValenceFactory`] so each request or worker rebuilds
@@ -15,7 +15,7 @@
 //!   [Per-request context](#per-request-context-ssr)
 //! - **Server helpers** — Encode and parse permission-denied payloads when you check
 //!   permissions by hand ([`server_runtime`]).
-//! - **Startup** — Host-owned preflight: run checks once after the database router is
+//! - **Startup preflight checks** — Host-owned preflight: run checks once after the database router is
 //!   installed and before schedulers, keep structured results.
 //!   [Startup preflight](#startup-preflight)
 //! - **Actor policy** — Fail-closed helpers for rebuilding Valence from untrusted

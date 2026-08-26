@@ -19,7 +19,7 @@
 //! - **Subsystem accessors** — When the host registered backends on the builder, SSR code
 //!   calls Chronon / Boson / Photon through `Higgs::chronon` / `boson` / `photon`.
 //!   Worker Valence recovery lives under [Workers](#workers--chronon--boson--photon).
-//! - **Startup preflight** — Host-owned boot checks and idempotent seed hooks: run once after
+//! - **Startup preflight checks** — Host-owned boot checks and idempotent seed hooks: run once after
 //!   the database router is up and before schedulers, keep structured pass/fail for logs or
 //!   setup UI. [Preflight at startup](#preflight-at-startup)
 //! - **Macros and session** — Lets Leptos `#[server]` handlers set the Higgs operation name
