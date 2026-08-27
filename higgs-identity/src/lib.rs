@@ -1,28 +1,24 @@
 //! # higgs-identity — session contract for hosts
 //!
-//! Abstract auth/session identity surface shared by host extractors and request
-//! public crates. Concrete Valence user models live in product crates (e.g.
-//! `lepton-identity`); adapters implement [`SessionIdentity`] and register
-//! [`SessionSnapshot`] in Axum extensions for host middleware to consume.
+//! Session snapshots and identity adapters for host middleware: product user types
+//! implement [`SessionIdentity`], middleware stores [`SessionSnapshot`] in Axum
+//! extensions, and extractors map that snapshot to a Valence actor without importing
+//! concrete user models.
 //!
-//! ## Capabilities
+//! ## Features
 //!
-//! - [`SessionUserId`] — stable session user identifier type
-//! - [`SessionSnapshot`] — minimal authenticated session, stored in Axum request
-//!   extensions by host middleware and read by `higgs-host` / `higgs` to build Valence
-//!   actors
-//! - [`SessionIdentity`] — implemented by concrete user types to produce a
-//!   [`SessionSnapshot`] via [`SessionIdentity::to_snapshot`]
+//! - **[`SessionUserId`]** — Stable session user id type hosts store on snapshots and compare
+//!   across reloads. [Quick example](#quick-example)
+//! - **[`SessionSnapshot`]** — Minimal authenticated session for Axum extensions so extractors
+//!   can map to a Valence actor without importing product user models.
+//!   [Quick example](#quick-example)
+//! - **[`SessionIdentity`]** — Adapt a concrete user type with `to_snapshot` for middleware
+//!   that inserts `SessionSnapshot`. [Quick example](#quick-example)
 //!
-//! # Organized by task
+//! # Getting started
 //!
-//! | Task | Start here |
-//! |------|------------|
-//! | Stable session user id type | [`SessionUserId`] |
-//! | Minimal authenticated session for Axum extensions | [`SessionSnapshot`], [`SessionSnapshot::new`] |
-//! | Adapt a concrete user type to the session contract | [`SessionIdentity`], [`SessionIdentity::to_snapshot`] — [example](#quick-example) |
-//!
-//! # Typical host flow
+//! Product user types implement [`SessionIdentity`]; middleware stores [`SessionSnapshot`]
+//! so `higgs-host` / `higgs` can map the request to a Valence `User` (or `Anonymous`).
 //!
 //! 1. Implement [`SessionIdentity`] on your product user type.
 //! 2. Middleware calls [`SessionIdentity::to_snapshot`] and inserts
@@ -35,6 +31,13 @@
 //! [`SessionSnapshot::auth_hash_eq`] for hosts that reload and compare hashes.
 //!
 //! # Quick example
+//!
+//! Builds a [`SessionSnapshot`] from a product user type for Axum extensions so
+//! `higgs-host` / `higgs` can map the request to a Valence `User` actor.
+//!
+//! Prerequisites: no Cargo features. Implement [`SessionIdentity`] on your product user
+//! type, call [`SessionIdentity::to_snapshot`], and store [`SessionSnapshot`] in Axum
+//! extensions so `higgs-host` / `higgs` can map it to a Valence `User` actor.
 //!
 //! ```rust
 //! use higgs_identity::{SessionIdentity, SessionSnapshot, SessionUserId};
@@ -60,12 +63,37 @@
 //! };
 //! let snap: SessionSnapshot = user.to_snapshot();
 //! assert_eq!(snap.user_id, "user:1");
+//! assert!(snap.auth_hash_eq(b"abc"));
 //! ```
+//!
+//! Observable outcome: `snap.user_id` equals the session id and `auth_hash_eq` accepts the
+//! same hash bytes. Next variant: [Auth-hash mismatch](#auth-hash-mismatch).
+//!
+//! # Auth-hash mismatch
+//!
+//! After reload, compare the stored snapshot hash to the current identity-store hash to
+//! decide whether the session is stale. Mismatch or length difference returns `false`.
+//!
+//! Prerequisites: a stored [`SessionSnapshot`] and the current user auth-hash bytes from
+//! your identity store. Hosts call [`SessionSnapshot::auth_hash_eq`] after reload to decide
+//! whether a session is stale.
+//!
+//! ```rust
+//! use higgs_identity::SessionSnapshot;
+//!
+//! let snap = SessionSnapshot::new("user:1", b"secret-hash");
+//! assert!(!snap.auth_hash_eq(b"other-hash"));
+//! assert!(!snap.auth_hash_eq(b"short"));
+//! ```
+//!
+//! Mismatch or length difference returns `false` (fail closed for equality). Next: wire
+//! middleware to insert [`SessionSnapshot`] and read it via `higgs-host` / `higgs`
+//! ([Getting started](#getting-started)).
 //!
 //! # Notes
 //!
-//! This crate defines only the contract — no Valence schemas, Leptos, or Axum
-//! wiring. Extraction lives in `higgs-host`; composed request context lives in `higgs`.
+//! Session contract only: no Valence schemas, Leptos, or Axum extractors here.
+//! Extraction lives in `higgs-host`; composed request context lives in `higgs`.
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};

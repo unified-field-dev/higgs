@@ -1,21 +1,55 @@
 //! Host guidance for Valence actor-JSON policies on shared factories.
 //!
-//! SSR [`crate::Higgs::unsafe_system_valence`] **explicitly mints** a System actor and must
+//! SSR `Higgs::unsafe_system_valence` **explicitly mints** a System actor and must
 //! remain distinct from untrusted JSON paths (enqueue / event / schedule payloads that
 //! carry `actor_json`). For those external edges, install
 //! [`crate::actor_policy::external_actor_json_policy`] on
 //! `RouterValenceFactoryConfig` (or your host factory wrapper) with
 //! `valence::ActorTrust::External`.
 //!
+//! Prerequisites: a host factory that rebuilds Valence from enqueue / event / schedule
+//! `actor_json`. First success: attach the policy when building the shared factory, then
+//! rebuild Valence from external actor JSON — System JSON fails closed. Runnable demo:
+//! `cargo run -p higgs --example shared_factory --features ssr` (prints that external
+//! System was rejected).
+//!
 //! # Examples
+//!
+//! Install the fail-closed policy on the shared factory config, then validate external
+//! actor JSON (System rejected, User allowed).
 //!
 //! ```ignore
 //! use higgs_core::actor_policy::external_actor_json_policy;
-//! use valence::RouterValenceFactoryConfig;
+//! use valence::{ActorJsonPolicy, ActorTrust, RouterValenceFactoryConfig};
 //!
+//! // Host keeps `config` on the shared factory when rebuilding from actor JSON.
 //! let config = RouterValenceFactoryConfig::new("default")
 //!     .actor_json_policy(external_actor_json_policy());
+//! let policy = external_actor_json_policy();
+//! assert!(
+//!     policy
+//!         .validate(
+//!             ActorTrust::External,
+//!             &serde_json::json!({"System":{"operation":"x"}})
+//!         )
+//!         .is_err(),
+//!     "System must fail closed for External"
+//! );
+//! assert!(
+//!     policy
+//!         .validate(
+//!             ActorTrust::External,
+//!             &serde_json::json!({"User":{"user_id":"user:1"}})
+//!         )
+//!         .is_ok(),
+//!     "User actor allowed"
+//! );
+//! // `config` is what the host stores on the factory; policy checks above are the oracle.
+//! let installed = format!("{config:?}");
+//! assert!(!installed.is_empty());
 //! ```
+//!
+//! Next: package `higgs` SSR / worker docs for where the factory Arc is registered.
 
 /// Re-export of Valence's fail-closed policy for untrusted `actor_json`.
 pub use valence::RejectExternalSystemActor;
@@ -26,10 +60,20 @@ pub use valence::RejectExternalSystemActor;
 ///
 /// ```ignore
 /// use higgs_core::actor_policy::external_actor_json_policy;
-/// use valence::RouterValenceFactoryConfig;
+/// use valence::{ActorJsonPolicy, ActorTrust, RouterValenceFactoryConfig};
 ///
 /// let config = RouterValenceFactoryConfig::new("default")
 ///     .actor_json_policy(external_actor_json_policy());
+/// let policy = external_actor_json_policy();
+/// assert!(
+///     policy
+///         .validate(
+///             ActorTrust::External,
+///             &serde_json::json!({"System":{"operation":"x"}})
+///         )
+///         .is_err()
+/// );
+/// assert!(!format!("{config:?}").is_empty());
 /// ```
 #[must_use]
 pub const fn external_actor_json_policy() -> RejectExternalSystemActor {

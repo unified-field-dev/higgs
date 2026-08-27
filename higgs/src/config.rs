@@ -1,4 +1,4 @@
-//! Process-wide platform Higgs configuration.
+//! Process-wide Higgs configuration (Valence factory plus optional subsystem backends).
 
 use std::sync::Arc;
 
@@ -24,8 +24,8 @@ use crate::HiggsValenceFactory;
 /// let config = HiggsConfig::builder()
 ///     .valence_factory(UnreachableValenceFactory)
 ///     .build()?;
-/// let _factory = config.valence_factory();
-/// # let _ = config;
+/// let factory = config.valence_factory();
+/// assert!(std::sync::Arc::strong_count(factory) >= 1);
 /// # Ok(())
 /// # }
 /// ```
@@ -59,7 +59,7 @@ impl HiggsConfig {
     /// let config = HiggsConfig::builder()
     ///     .valence_factory(UnreachableValenceFactory)
     ///     .build()?;
-    /// # let _ = config;
+    /// assert!(std::sync::Arc::strong_count(config.valence_factory()) >= 1);
     /// # Ok(())
     /// # }
     /// ```
@@ -67,12 +67,12 @@ impl HiggsConfig {
         HiggsConfigBuilder::default()
     }
 
-    /// Shared thin-hub config (Valence factory only).
+    /// Core Valence/session config from [`higgs_core`].
     pub fn core(&self) -> &higgs_core::HiggsConfig {
         &self.core
     }
 
-    /// Shared thin-hub config as an `Arc`.
+    /// Core config as an `Arc`.
     pub fn core_arc(&self) -> Arc<higgs_core::HiggsConfig> {
         Arc::clone(&self.core)
     }

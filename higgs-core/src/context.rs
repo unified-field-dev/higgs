@@ -20,7 +20,13 @@ use crate::HiggsError;
 ///
 /// let ctx = Higgs::from_request().await?;
 /// let valence = ctx.valence().map_err(leptos::prelude::ServerFnError::new)?;
-/// let _ = valence;
+/// let actor = valence.actor();
+/// assert!(
+///     matches!(
+///         actor,
+///         valence::Actor::Anonymous | valence::Actor::User { .. } | valence::Actor::System { .. }
+///     )
+/// );
 /// # Ok(())
 /// # }
 /// ```
@@ -68,7 +74,13 @@ impl Higgs {
     ///
     /// let ctx = Higgs::from_request().await?;
     /// let valence = ctx.valence().map_err(leptos::prelude::ServerFnError::new)?;
-    /// let _ = valence;
+    /// let actor = valence.actor();
+    /// assert!(
+    ///     matches!(
+    ///         actor,
+    ///         valence::Actor::Anonymous | valence::Actor::User { .. } | valence::Actor::System { .. }
+    ///     )
+    /// );
     /// # Ok(())
     /// # }
     /// ```
@@ -128,7 +140,13 @@ impl Higgs {
     /// # #[cfg(feature = "ssr")]
     /// # async fn demo(ctx: &higgs_core::Higgs) -> Result<(), leptos::prelude::ServerFnError> {
     /// let valence = ctx.valence().map_err(leptos::prelude::ServerFnError::new)?;
-    /// let _ = valence.actor();
+    /// let actor = valence.actor();
+    /// assert!(
+    ///     matches!(
+    ///         actor,
+    ///         valence::Actor::Anonymous | valence::Actor::User { .. } | valence::Actor::System { .. }
+    ///     )
+    /// );
     /// # Ok(())
     /// # }
     /// ```
@@ -161,7 +179,7 @@ impl Higgs {
     /// ```rust,ignore
     /// // Prefer with_operation / #[higgs_macros::server] so the System actor is attributed.
     /// let valence = ctx.unsafe_system_valence()?;
-    /// let _ = valence.actor();
+    /// assert!(matches!(valence.actor(), valence::Actor::System { .. }));
     /// ```
     pub fn unsafe_system_valence(&self) -> Result<valence::Valence, HiggsError> {
         let operation = higgs_host::current_operation()

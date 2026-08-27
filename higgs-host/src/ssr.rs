@@ -1,4 +1,18 @@
-//! SSR helpers: extract Valence router + optional [`higgs_identity::SessionSnapshot`].
+//! SSR request extraction for Leptos server functions.
+//!
+//! Pull the Valence [`valence::DatabaseRouter`] and optional [`higgs_identity::SessionSnapshot`]
+//! from Axum extensions, then map session → [`valence::Actor::User`] or missing session →
+//! [`valence::Actor::Anonymous`].
+//!
+//! Typical path: middleware inserts `Extension<SessionSnapshot>` → [`host_ctx`] →
+//! [`HostRequestCtx::actor`]. Prefer `higgs::Higgs::from_request` when using package
+//! `higgs`; call these helpers directly for host adapters that stay on `higgs-host`.
+//!
+//! Runnable first success: `cargo run -p higgs --example axum_session_host --features ssr`
+//! prints `axum_session_host: OK — session → Higgs → worker factory`.
+//!
+//! Variant: [`unsafe_data_plane`] returns router-only context (no session) for
+//! boot/control-plane paths — not for user CRUD.
 
 use axum::extract::Extension;
 use higgs_identity::SessionSnapshot;
@@ -22,7 +36,7 @@ tokio::task_local! {
 /// use higgs_host::unsafe_data_plane;
 ///
 /// let plane = unsafe_data_plane().await?;
-/// let _router = &plane.database_router;
+/// assert!(std::sync::Arc::strong_count(&plane.database_router) >= 1);
 /// ```
 #[derive(Clone)]
 pub struct DataPlaneCtx {
@@ -36,9 +50,14 @@ pub struct DataPlaneCtx {
 ///
 /// ```rust,ignore
 /// use higgs_host::{host_ctx, HostRequestCtx};
+/// use valence::Actor;
 ///
 /// let host: HostRequestCtx = host_ctx().await?;
-/// let _actor = host.actor();
+/// let actor = host.actor();
+/// assert!(matches!(
+///     actor,
+///     Actor::Anonymous | Actor::User { .. } | Actor::System { .. }
+/// ));
 /// ```
 #[derive(Clone)]
 pub struct HostRequestCtx {
@@ -87,7 +106,7 @@ impl HostRequestCtx {
 /// use higgs_host::unsafe_data_plane;
 ///
 /// let plane = unsafe_data_plane().await?;
-/// let _ = plane.database_router;
+/// assert!(std::sync::Arc::strong_count(&plane.database_router) >= 1);
 /// ```
 pub async fn unsafe_data_plane() -> Result<DataPlaneCtx, ServerFnError> {
     let Extension(database_router): Extension<Arc<DatabaseRouter>> = extract().await?;
@@ -122,9 +141,14 @@ pub async fn data_plane() -> Result<DataPlaneCtx, ServerFnError> {
 ///
 /// ```rust,ignore
 /// use higgs_host::{host_ctx, HostRequestCtx};
+/// use valence::Actor;
 ///
 /// let host: HostRequestCtx = host_ctx().await?;
-/// let _actor = host.actor();
+/// let actor = host.actor();
+/// assert!(matches!(
+///     actor,
+///     Actor::Anonymous | Actor::User { .. } | Actor::System { .. }
+/// ));
 /// ```
 pub async fn host_ctx() -> Result<HostRequestCtx, ServerFnError> {
     let Extension(database_router): Extension<Arc<DatabaseRouter>> = extract().await?;
