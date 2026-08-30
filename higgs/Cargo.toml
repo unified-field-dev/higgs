@@ -44,9 +44,9 @@ boson-runtime = { workspace = true }
 boson-core = { workspace = true }
 boson-macros = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-quark = { package = "uf-quark", version = "0.1.3" }
+quark = { package = "uf-quark", git = "https://github.com/unified-field-dev/quark", branch = "main" }
 futures = "0.3"
-photon-core = { package = "uf-photon-core", version = "0.1.4" }
+photon-core = { package = "uf-photon-core", git = "https://github.com/unified-field-dev/photon", branch = "main" }
 
 [lints]
 workspace = true
